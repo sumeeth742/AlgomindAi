@@ -1,0 +1,8 @@
+{
+  "name": "algomind-js-trace-instrumenter",
+  "private": true,
+  "description": "Standalone dependency for parsing a learner's JS submission into a real ESTree AST to splice in trace-recording calls (execution/trace_probe.py) -- kept separate from diagnosis/js_analyzer's identical dependency so each feature's Node tooling is self-contained.",
+  "dependencies": {
+    "espree": "^10.1.0"
+  }
+}

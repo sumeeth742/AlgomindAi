@@ -1,0 +1,8 @@
+{
+  "name": "algomind-js-analyzer",
+  "private": true,
+  "description": "Standalone dependency for parsing submitted JavaScript into a real ESTree AST for diagnosis feature extraction -- intentionally isolated from the frontend's node_modules so the backend doesn't depend on the frontend's incidental devDependency tree.",
+  "dependencies": {
+    "espree": "^10.1.0"
+  }
+}
