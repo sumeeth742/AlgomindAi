@@ -110,8 +110,8 @@ def get_transfer_challenge(
     ).first()
     if not user_skill or user_skill.mastery < TRANSFER_MASTERY_THRESHOLD:
         return TransferChallengeOut(
-            available=False, reason=f"Mastery on familiar problems is below {int(TRANSFER_MASTERY_THRESHOLD * 100)}% -- "
-                                     "solve more problems in this skill before testing transfer.",
+            available=False, reason=f"Your progress on familiar problems is below {int(TRANSFER_MASTERY_THRESHOLD * 100)}% -- "
+                                     "solve more problems in this concept first.",
         )
 
     attempted_ids = {
@@ -129,13 +129,13 @@ def get_transfer_challenge(
     if not candidate:
         return TransferChallengeOut(
             available=False,
-            reason="No unattempted problem exists yet in this skill to test transfer against -- you've covered every seeded problem here.",
+            reason="There's no new problem left to try in this concept yet -- you've covered every seeded problem here.",
         )
 
     return TransferChallengeOut(
         available=True, problem_slug=candidate.slug, problem_title=candidate.title,
-        reason=f"Mastery is {int(user_skill.mastery * 100)}% on familiar problems -- this checks whether that "
-               "understanding transfers to a problem you haven't seen before.",
+        reason=f"You're at {int(user_skill.mastery * 100)}% progress on familiar problems -- this checks whether "
+               "you can apply the idea to a problem you haven't seen before.",
     )
 
 

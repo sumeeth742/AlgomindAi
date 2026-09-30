@@ -4,8 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.database import Base, engine
 from app import models  # noqa: F401 -- ensures all model classes are registered on Base before create_all
 from app.routers import (
-    analytics, auth, contests, interviews, lld, networks, problems, recommendations, retention, skills,
-    system_design, tracks,
+    analytics, auth, cheat_sheet, concept_bridges, contests, interviews, lld, networks, problems, recommendations,
+    retention, skills, system_design, tracks,
 )
 
 app = FastAPI(title="ALGOMIND AI", version="0.1.0")
@@ -39,6 +39,8 @@ app.include_router(tracks.router)
 app.include_router(contests.router)
 app.include_router(lld.router)
 app.include_router(networks.router)
+app.include_router(concept_bridges.router)
+app.include_router(cheat_sheet.router)
 
 
 @app.get("/health")

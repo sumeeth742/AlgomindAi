@@ -22,6 +22,8 @@ from functools import lru_cache
 import numpy as np
 from sklearn.neural_network import MLPClassifier
 
+from app.services.content.key_takeaway import extract_key_takeaway
+
 EXAMPLE_WORDS = ("example", "like", "such as", "for instance", "e.g", "imagine", "say you")
 WHY_WORDS = ("because", "since", "so that", "this means", "the reason", "which lets", "which means")
 STOPWORDS = {
@@ -37,15 +39,6 @@ QUALITY_TIERS = {
 }
 
 FEATURE_NAMES = ["word_count", "matched_term_ratio", "mentions_example", "mentions_why"]
-
-
-def _extract_key_takeaway(markdown: str) -> str:
-    match = re.search(r"##\s*key takeaway\s*\n(.+?)(?=\n##|\Z)", markdown, re.IGNORECASE | re.DOTALL)
-    if match:
-        return match.group(1).strip()
-    # Fall back to the "What is it?" section if there's no Key Takeaway heading.
-    match = re.search(r"##\s*what is it\??\s*\n(.+?)(?=\n##|\Z)", markdown, re.IGNORECASE | re.DOTALL)
-    return match.group(1).strip() if match else markdown[:400]
 
 
 def _extract_key_terms(title: str, key_takeaway: str) -> set[str]:
@@ -88,7 +81,7 @@ def _get_model() -> MLPClassifier:
 
 
 def score_explanation(title: str, content_markdown: str, user_explanation: str) -> dict:
-    key_takeaway = _extract_key_takeaway(content_markdown)
+    key_takeaway = extract_key_takeaway(content_markdown)
     key_terms = _extract_key_terms(title, key_takeaway)
 
     user_words = set(re.findall(r"[a-zA-Z][a-zA-Z\-]{2,}", user_explanation.lower())) - STOPWORDS

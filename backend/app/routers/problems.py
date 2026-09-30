@@ -220,6 +220,22 @@ def submit_reasoning(
     matched = sorted(corpus_terms & reasoning_terms)
     quality = min(1.0, len(matched) / 3) if matched or payload.reasoning_text else 0.0
 
+    # Reasoning gap diff: when the declared pattern is wrong, show WHICH real
+    # signal from the correct pattern's own vocabulary is genuinely missing
+    # from the reasoning text (not just how many matched), and -- if the
+    # declared pattern is itself a real skill -- which of ITS real vocabulary
+    # the reasoning text actually used, so a learner sees exactly why their
+    # reasoning read as the wrong pattern instead of just being told it was
+    # wrong. Both sides come from the same skill name/description corpus
+    # already used for `matched`, never invented text.
+    missing_evidence = sorted(w for w in (corpus_terms - reasoning_terms) if len(w) >= 3)[:8]
+    declared_pattern_evidence: list[str] = []
+    if not is_correct:
+        declared_skill = db.query(Skill).filter(Skill.key == payload.declared_pattern).first()
+        if declared_skill:
+            declared_terms = set(w.lower() for w in (declared_skill.name + " " + declared_skill.description).split())
+            declared_pattern_evidence = sorted(w for w in (declared_terms & reasoning_terms) if len(w) >= 3)
+
     attempt = ReasoningAttempt(
         user_id=current_user.id, problem_id=problem.id, declared_pattern=payload.declared_pattern,
         reasoning_text=payload.reasoning_text, is_correct_pattern=is_correct,
@@ -237,8 +253,9 @@ def submit_reasoning(
     plan_quality_coach = score_plan_quality(payload.reasoning_text, len(matched), is_correct)
     return ReasoningSubmitResponse(
         is_correct_pattern=is_correct, correct_pattern=problem.primary_skill.key,
-        reasoning_quality_score=quality, evidence_matched=matched, feedback=feedback,
-        plan_quality_coach=plan_quality_coach,
+        reasoning_quality_score=quality, evidence_matched=matched,
+        missing_evidence=missing_evidence, declared_pattern_evidence=declared_pattern_evidence,
+        feedback=feedback, plan_quality_coach=plan_quality_coach,
     )
 
 

@@ -638,6 +638,67 @@ Visit the printed localhost URL, register an account, and go.
   critique score linked); the behavioral round correctly distinguished a real STAR-structured answer (scored
   "STRONG_STAR_STRUCTURE") from a shorter one; and the final combined report pulled real data from all three
   linked records into one honest summary.
+- **Cross-Domain Concept Bridge** (`/concept-bridges/{domain}/{key}`, `services/concept_bridge/bridge.py`): this
+  platform is unusual in teaching DSA, System Design, and Computer Networks side by side, but until now the three
+  curricula were authored and browsed as three separate silos with no link between them. This computes real
+  connections: TF-IDF vectorizes every lesson's actual title + body text across all three curricula (local
+  scikit-learn only -- deliberately bag-of-words, not pretrained embeddings, since those were removed from this
+  project per explicit direction), then cosine-similarity ranks every lesson against every other lesson. For a
+  given lesson, the top matches from the *other two* curricula (never the same one -- that's just "related
+  topics," not a cross-domain bridge) above a small noise floor (0.06 cosine similarity) are shown with their
+  real similarity score, capped at the top 3. There is no hand-curated list anywhere -- if a lesson has no real
+  lexical overlap with anything in the other two curricula, the panel honestly shows nothing rather than forcing
+  a weak match. Verified live against the real seeded content, and the results are genuinely meaningful, not
+  coincidental: "Real-Time Communication (System Design)" bridges to "Socket Programming (Networks)" at 14%
+  overlap, "DNS Resolution (System Design)" to "The TCP/IP Model (Networks)" at 12%, "Load Balancing Algorithms
+  (System Design)" to "The OSI Model (Networks)" at 12%, and "Binary Trees (DSA)" to "Database Internals: B-Trees
+  vs LSM-Trees (System Design)" at 12% -- real structural analogies the corpus actually surfaced on its own, not
+  planted. A `GET /concept-bridges` endpoint also powers a whole-platform ranked list of the strongest links
+  found anywhere, for browsing rather than one lesson at a time. Shown as a small panel on every DSA skill,
+  System Design lesson, and Networks lesson page (reusing each page's existing lesson-detail view), and each
+  cross-domain result links directly to the other lesson -- which required adding `?lesson=slug` deep-link
+  support to the System Design and Networks pages (the DSA skills page already supported `?skill=key`).
+- **Reasoning Gap Diff** (`POST /problems/{slug}/reasoning`, `routers/problems.py`): pattern-recognition feedback
+  used to only say "wrong, the correct pattern was X" with a bare match count. This replaces that with a real
+  diff, built from the exact same grounded-vocabulary mechanism the endpoint already used for its quality score
+  (each skill's own real name + description text, never invented) -- just computed in both directions instead of
+  one: `missing_evidence` is the real vocabulary of the correct pattern that genuinely never appeared anywhere in
+  what the learner wrote, and `declared_pattern_evidence` is the real vocabulary of the (wrong) pattern they
+  *did* declare that their own reasoning text actually used -- i.e. concrete proof of which real signal pulled
+  their reasoning toward the wrong answer. Verified live: declaring `TWO_POINTER` with reasoning text "two
+  pointers moving inward from sorted ends" on a Sliding Window problem correctly surfaced `declared_pattern_evidence:
+  ["pointers", "two"]` and `missing_evidence: ["contiguous", "fixed/variable", "over", "sliding", "subarrays",
+  "substrings", "window"]`; a correct submission for the same problem correctly showed matched evidence and a
+  much shorter missing list; declaring a pattern that isn't a real skill key correctly leaves
+  `declared_pattern_evidence` empty rather than guessing.
+- **Narrated Animated Walkthroughs** (`components/visualizers/FlowDiagram.tsx`, `lib/networkVisualizations.ts`),
+  per explicit direction to add "virtual lessons... through video... like a story video": this project has no
+  video-generation capability and no API key for an external video service, so instead of faking that, this
+  builds the closest honest equivalent -- the existing step-by-step `FlowDiagram` component (already used for 10
+  System Design lessons) now has a narration toggle that reads each step's real note text aloud automatically
+  using the browser's own built-in speech synthesis (`speechSynthesis`/`SpeechSynthesisUtterance` -- local,
+  free, no API key, no recorded audio, and gracefully hidden if the browser doesn't support it), so stepping or
+  auto-playing through a diagram now plays like a narrated walkthrough instead of requiring silent reading.
+  8 new real, technically accurate diagram scripts were authored for the Computer Networks curriculum, which
+  previously had zero animated diagrams anywhere (only quiz + chat): the real TCP three-way handshake and
+  teardown sequence (SYN / SYN-ACK / ACK with actual sequence-number semantics), TCP vs UDP side by side, TCP
+  congestion control's real slow-start-then-saw-tooth behavior, the real TLS handshake up to the symmetric
+  session key, NAT's real source/destination port-rewriting round trip, hop-by-hop IP routing, socket
+  programming's real bind/listen/connect/accept lifecycle, and MAC-learning switch flooding -- every field
+  named (sequence numbers, cwnd growth, port numbers) is real protocol behavior, not invented for effect. Along
+  the way, `FlowDiagram` also got a genuine correctness fix: edge labels used to render unconditionally for
+  every edge at all times, which meant two real messages between the same two nodes (e.g. a handshake's SYN and
+  ACK) would render as illegible overlapping text; labels now only render for the edge active in that exact
+  step, which is both a rendering fix and a better fit for a narrated walkthrough (no spoiling future steps).
+- **Printable Study Cheat Sheet** (`/cheat-sheet`, `GET /cheat-sheet/{dsa|system-design|networks}`): one page per
+  curriculum, grouped by chapter/category, with each skill or lesson's own real mnemonic (DSA only) and real
+  "Key Takeaway" section -- condensed, never generated. The key-takeaway extraction itself was pulled out of the
+  Explain-It-Back scorer into a shared `services/content/key_takeaway.py` so both features read the exact same
+  real text and can never quietly disagree about what a lesson's core idea is. Real coverage, checked live: 28/28
+  DSA skills, 42/44 System Design lessons, and 14/14 Networks lessons have a genuine "Key Takeaway" heading; the
+  2 System Design lessons without one fall back to their "What is it?" section rather than showing nothing. A
+  dedicated print stylesheet hides the sidebar/navbar chrome (via a `[data-print-hide]` attribute) so what
+  prints is just the cheat sheet itself, not the app around it.
 
 ## Honest scope limitations (things NOT built, so as not to overclaim)
 

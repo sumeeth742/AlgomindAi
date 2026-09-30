@@ -181,5 +181,7 @@ class ReasoningSubmitResponse(BaseModel):
     correct_pattern: str
     reasoning_quality_score: float
     evidence_matched: list[str]
+    missing_evidence: list[str]
+    declared_pattern_evidence: list[str]
     feedback: str
     plan_quality_coach: dict | None = None
