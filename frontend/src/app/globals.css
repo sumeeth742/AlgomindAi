@@ -1,0 +1,41 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+:root {
+  --background: #f5f5f5;
+  --foreground: #171717;
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* No prefers-color-scheme override: this file is unlayered CSS and always beats
+   Tailwind's layered utility classes, which broke the light design in dark mode.
+   For the same reason, `background` is deliberately left off this rule -- the
+   page background is a Tailwind gradient set directly on <body> in layout.tsx,
+   and an unlayered `background` here would silently override it. */
+body {
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Printing a page (the Study Cheat Sheet) should print just that page's
+   content -- never the app chrome around it, which exists for on-screen
+   navigation and means nothing on paper. */
+@media print {
+  [data-print-hide] {
+    display: none !important;
+  }
+  [data-print-content] {
+    padding-left: 0 !important;
+  }
+  [data-print-content] main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+}
